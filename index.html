@@ -64,63 +64,64 @@
             </div>
         </div>
     </div>
-    <script>
-        // Replace this URL with the actual raw GitHub URL of your Excel file
-        const EXCEL_FILE_URL = 'https://raw.githubusercontent.com/yourusername/yourrepository/main/data.xlsx';
-        let workbook = null;
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script>
+    document.getElementById('searchForm').addEventListener('submit', function(event) {
+  event.preventDefault();
 
-        // Fetch and parse the Excel file when the page loads
-        fetch(EXCEL_FILE_URL)
-            .then(response => response.arrayBuffer())
-            .then(data => {
-                workbook = XLSX.read(new Uint8Array(data), {type: 'array'});
-                console.log('Excel file loaded successfully');
-            })
-            .catch(error => {
-                console.error('Error loading Excel file:', error);
-                alert('Failed to load result data. Please try again later.');
-            });
+  const enroll = document.getElementById('enroll').value.trim();
+  const grno = document.getElementById('grno').value.trim();
 
-        document.getElementById('searchForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            if (!workbook) {
-                alert('Result data is still loading. Please try again in a moment.');
-                return;
-            }
-            const enrollmentNo = document.getElementById('enrollmentNo').value;
-            const grNo = document.getElementById('grNo').value;
-            searchResult(enrollmentNo, grNo);
-        });
+  // Assume we have the Excel file uploaded or read
+  const fileInput = 'data.xlsx';
 
-        function searchResult(enrollmentNo, grNo) {
-            const resultDiv = document.getElementById('result');
-            resultDiv.innerHTML = '<p>Searching for results...</p>';
+  fetchExcelData(fileInput, enroll, grno);
+});
 
-            const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-            const jsonData = XLSX.utils.sheet_to_json(worksheet);
+function fetchExcelData(filePath, enroll, grno) {
+  const reader = new XMLHttpRequest();
+  reader.open("GET", filePath, true);
+  reader.responseType = "arraybuffer";
 
-            const result = jsonData.find(row => 
-                row['Enrollment No.'] == enrollmentNo && row['Gr. No.'] == grNo
-            );
+  reader.onload = function(e) {
+    const data = new Uint8Array(reader.response);
+    const workbook = XLSX.read(data, { type: 'array' });
+    const firstSheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[firstSheetName];
 
-            if (result) {
-                resultDiv.innerHTML = `
-                    <div class="alert alert-success">
-                        <h5>Result Found:</h5>
-                        <p><strong>Name:</strong> ${result['Name']}</p>
-                        <p><strong>Enrollment No.:</strong> ${result['Enrollment No.']}</p>
-                        <p><strong>Gr. No.:</strong> ${result['Gr. No.']}</p>
-                        <p><strong>Marks:</strong> ${result['Marks']}</p>
-                    </div>
-                `;
-            } else {
-                resultDiv.innerHTML = `
-                    <div class="alert alert-warning">
-                        No result found for the given Enrollment No. and Gr. No.
-                    </div>
-                `;
-            }
-        }
-    </script>
+    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+    const matchedRecord = searchForRecord(jsonData, enroll, grno);
+
+    displayResult(matchedRecord);
+  };
+
+  reader.send();
+}
+
+function searchForRecord(data, enroll, grno) {
+  for (let i = 1; i < data.length; i++) { //skips header line
+    const row = data[i];
+    if (row[0] == enroll && row[1] == grno) {
+      return { name: row[2], marks: row[3] };
+    }
+  }
+  return null;
+}
+
+function displayResult(record) {
+  const resultDiv = document.getElementById('result');
+  resultDiv.innerHTML = '';
+
+  if (record) {
+    resultDiv.innerHTML = `<h5>Result Found</h5><br>
+                           <h6>Name: ${record.name}</h6>
+                           <h6>Marks: ${record.marks}</h6>`;
+  } else {
+    resultDiv.innerHTML = `<p class="text-danger">No matching record found!!</p>`;
+  }
+}
+</script>
+<!-- This project done by - Amar B. Davda | IT student From Marwadi University | Enroll: 92200104020 | amardavda1715@gmail.com -->
 </body>
 </html>
