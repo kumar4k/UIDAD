@@ -14,6 +14,13 @@
             font-size: 1.5rem;
             margin-top: 0.2rem;
         }
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .form-label {
+            font-weight: bold;
+        }
         .copyright {
             font-size: 0.8rem;
             color: #6c757d;
@@ -21,6 +28,20 @@
             padding-top: 1rem;
             border-top: 1px solid #dee2e6;
             margin-top: 1rem;
+        }
+        @media (max-width: 576px) {
+            .card {
+                margin: 0 1rem;
+            }
+            .custom-header h2, .custom-header h3 {
+                font-size: 1.25rem;
+            }
+            .card-body p {
+                font-size: 0.9rem;
+            }
+            h4 {
+                font-size: 1.1rem;
+            }
         }
     </style>
 </head>
@@ -52,7 +73,7 @@
                         <input type="text" class="form-control" id="grno" required placeholder="Enter Gr. No.">
                     </div>
                     <div class="text-center">
-                        <button type="submit" class="btn btn-primary">Search</button>
+                        <button type="submit" class="btn btn-primary btn-lg w-100">Search</button>
                     </div>
                 </form>
                 <div id="result" class="mt-4">
@@ -65,8 +86,7 @@
         </div>
     </div>
 
-     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-     <script>
+    <script>
         document.getElementById('searchForm').addEventListener('submit', function(event) {
             event.preventDefault();
 
@@ -111,9 +131,14 @@
             resultDiv.innerHTML = '';
 
             if (record) {
+                const passMessage = record.marks >= 12
+                    ? `<p class="text-success">You have passed.</p>`
+                    : `<p class="text-danger">You have failed, contact subject faculty.</p>`;
+
                 resultDiv.innerHTML = `<h5>Result Found</h5><br>
                                        <h6>Name: ${record.name}</h6>
-                                       <h6>Marks: ${record.marks}</h6>`;
+                                       <h6>Marks: ${record.marks}</h6>
+                                       ${passMessage}`;
             } else {
                 resultDiv.innerHTML = `<p class="text-danger">No matching record found!!</p>`;
             }
