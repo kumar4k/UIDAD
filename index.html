@@ -44,12 +44,12 @@
                 <h4 class="text-center mb-4">Result Search</h4>
                 <form id="searchForm">
                     <div class="mb-3">
-                        <label for="enrollmentNo" class="form-label">Enrollment No.</label>
-                        <input type="text" class="form-control" id="enrollmentNo" required placeholder="Enter Enrollment No.">
+                        <label for="enroll" class="form-label">Enrollment No.</label>
+                        <input type="text" class="form-control" id="enroll" required placeholder="Enter Enrollment No.">
                     </div>
                     <div class="mb-3">
-                        <label for="grNo" class="form-label">Gr. No.</label>
-                        <input type="text" class="form-control" id="grNo" required placeholder="Enter Gr. No.">
+                        <label for="grno" class="form-label">Gr. No.</label>
+                        <input type="text" class="form-control" id="grno" required placeholder="Enter Gr. No.">
                     </div>
                     <div class="text-center">
                         <button type="submit" class="btn btn-primary">Search</button>
@@ -64,64 +64,60 @@
             </div>
         </div>
     </div>
+
      <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script>
-    document.getElementById('searchForm').addEventListener('submit', function(event) {
-  event.preventDefault();
+     <script>
+        document.getElementById('searchForm').addEventListener('submit', function(event) {
+            event.preventDefault();
 
-  const enroll = document.getElementById('enroll').value.trim();
-  const grno = document.getElementById('grno').value.trim();
+            const enroll = document.getElementById('enroll').value.trim();
+            const grno = document.getElementById('grno').value.trim();
 
-  // Assume we have the Excel file uploaded or read
-  const fileInput = 'data.xlsx';
+            const fileInput = 'data.xlsx'; // Assuming this file is available
 
-  fetchExcelData(fileInput, enroll, grno);
-});
+            fetchExcelData(fileInput, enroll, grno);
+        });
 
-function fetchExcelData(filePath, enroll, grno) {
-  const reader = new XMLHttpRequest();
-  reader.open("GET", filePath, true);
-  reader.responseType = "arraybuffer";
+        function fetchExcelData(filePath, enroll, grno) {
+            const reader = new XMLHttpRequest();
+            reader.open("GET", filePath, true);
+            reader.responseType = "arraybuffer";
 
-  reader.onload = function(e) {
-    const data = new Uint8Array(reader.response);
-    const workbook = XLSX.read(data, { type: 'array' });
-    const firstSheetName = workbook.SheetNames[0];
-    const worksheet = workbook.Sheets[firstSheetName];
+            reader.onload = function(e) {
+                const data = new Uint8Array(reader.response);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                const matchedRecord = searchForRecord(jsonData, enroll, grno);
+                displayResult(matchedRecord);
+            };
 
-    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+            reader.send();
+        }
 
-    const matchedRecord = searchForRecord(jsonData, enroll, grno);
+        function searchForRecord(data, enroll, grno) {
+            for (let i = 1; i < data.length; i++) {
+                const row = data[i];
+                if (row[0] == enroll && row[1] == grno) {
+                    return { name: row[2], marks: row[3] };
+                }
+            }
+            return null;
+        }
 
-    displayResult(matchedRecord);
-  };
+        function displayResult(record) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '';
 
-  reader.send();
-}
-
-function searchForRecord(data, enroll, grno) {
-  for (let i = 1; i < data.length; i++) { //skips header line
-    const row = data[i];
-    if (row[0] == enroll && row[1] == grno) {
-      return { name: row[2], marks: row[3] };
-    }
-  }
-  return null;
-}
-
-function displayResult(record) {
-  const resultDiv = document.getElementById('result');
-  resultDiv.innerHTML = '';
-
-  if (record) {
-    resultDiv.innerHTML = `<h5>Result Found</h5><br>
-                           <h6>Name: ${record.name}</h6>
-                           <h6>Marks: ${record.marks}</h6>`;
-  } else {
-    resultDiv.innerHTML = `<p class="text-danger">No matching record found!!</p>`;
-  }
-}
-</script>
-<!-- This project done by - Amar B. Davda | IT student From Marwadi University | Enroll: 92200104020 | amardavda1715@gmail.com -->
+            if (record) {
+                resultDiv.innerHTML = `<h5>Result Found</h5><br>
+                                       <h6>Name: ${record.name}</h6>
+                                       <h6>Marks: ${record.marks}</h6>`;
+            } else {
+                resultDiv.innerHTML = `<p class="text-danger">No matching record found!!</p>`;
+            }
+        }
+    </script>
 </body>
 </html>
