@@ -55,8 +55,11 @@
             <div class="card-body">
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <p><strong>Subject Name:</strong> UIDAD</p>
-                        <p><strong>Subject Code:</strong> 01IT0717</p>
+                        <p><strong>Subject Name:</strong></p>
+                        <select id="subjectSelect" class="form-select" required>
+                            <option value="01IT0717">UIDAD (01IT0717)</option>
+                            <option value="01IT0708">BDA (01IT0708)</option>
+                        </select>
                     </div>
                     <div class="col-md-6 text-md-end">
                         <p><strong>Semester:</strong> 7th</p>
@@ -92,13 +95,14 @@
 
             const enroll = document.getElementById('enroll').value.trim();
             const grno = document.getElementById('grno').value.trim();
+            const subjectCode = document.getElementById('subjectSelect').value; // Get selected subject
 
             const fileInput = 'data.xlsx'; // Assuming this file is available
 
-            fetchExcelData(fileInput, enroll, grno);
+            fetchExcelData(fileInput, enroll, grno, subjectCode);
         });
 
-        function fetchExcelData(filePath, enroll, grno) {
+        function fetchExcelData(filePath, enroll, grno, subjectCode) {
             const reader = new XMLHttpRequest();
             reader.open("GET", filePath, true);
             reader.responseType = "arraybuffer";
@@ -109,17 +113,17 @@
                 const firstSheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[firstSheetName];
                 const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-                const matchedRecord = searchForRecord(jsonData, enroll, grno);
+                const matchedRecord = searchForRecord(jsonData, enroll, grno, subjectCode);
                 displayResult(matchedRecord);
             };
 
             reader.send();
         }
 
-        function searchForRecord(data, enroll, grno) {
+        function searchForRecord(data, enroll, grno, subjectCode) {
             for (let i = 1; i < data.length; i++) {
                 const row = data[i];
-                if (row[0] == enroll && row[1] == grno) {
+                if (row[0] == enroll && row[1] == grno && row[4] == subjectCode) { // Check subject code
                     return { name: row[2], marks: row[3] };
                 }
             }
